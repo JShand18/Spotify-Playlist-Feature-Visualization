@@ -6,4 +6,16 @@
 .tf/.terraform
 .tf/terraform.tfvars
 
+*.conf
+
+airflow/extraction/*.csv
+airflow/dags/__pycache__
+airflow/plugins/*
+airflow/logs/*
+airflow/extracts/*
+airflow/.env
+airflow/.DS_Store
+airflow/extraction/pipeline_secret.conf
+!*.tf
+
 __pycache__/
