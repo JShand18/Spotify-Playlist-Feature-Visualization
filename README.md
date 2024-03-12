@@ -1,5 +1,5 @@
 # Spotify Playlist Feature Visualization
-[WIP] Let's try this one more time
+[WIP] Let's try this one more time, more playlists, more fun
 
 ## Problem
 My last attempt: [spotify-api-pipeline](https://github.com/JShand18/spotify-api-pipeline) proved troublesome when it came to using Lambda and Cloudwatch to facilitate the orchastration on the pipeline.
@@ -24,4 +24,5 @@ ABZ-Aaron's repo has provided me a verbose understanding of the infrastructure a
 
 ## External Docs
 [Spotify Web API](https://developer.spotify.com/documentation/web-api)
+
 [Spotipy Documentation](https://spotipy.readthedocs.io/en/2.22.1/#)
