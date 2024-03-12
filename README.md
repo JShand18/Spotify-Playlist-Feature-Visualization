@@ -21,3 +21,7 @@ Orchestration via Airflow! Containers and images with Docker cause why not!
 
 ## Credit
 ABZ-Aaron's repo has provided me a verbose understanding of the infrastructure and tools to make this project possible, please consider giving a look: [Reddit–API–Pipeline](https://github.com/ABZ-Aaron/Reddit-API-Pipeline/tree/master)
+
+## External Docs
+[Spotify Web API](https://developer.spotify.com/documentation/web-api)
+[Spotipy Documentation](https://spotipy.readthedocs.io/en/2.22.1/#)
