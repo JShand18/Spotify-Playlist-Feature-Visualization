@@ -11,8 +11,8 @@ class Playlist():
         self.name = name
         self.uri = uri
         self.tracks = self.extract()
-        self.filename = f'{self.name}.csv'
-        self.filepath = Path(f'files/{self.filename}')
+        # self.filename = f'{self.name}.csv'
+        # self.filepath = Path(f'files/{self.filename}')
     
     def extract(self):
         # retrieving tracks from spotify
@@ -93,5 +93,5 @@ class Playlist():
         features_playlist_df = pd.DataFrame(track_features)
         return features_playlist_df
     
-    def save_to_csv(self):
-        self.tracks.to_csv(self.filepath)
+    # def save_to_csv(self):
+    #     self.tracks.to_csv(self.filepath)
