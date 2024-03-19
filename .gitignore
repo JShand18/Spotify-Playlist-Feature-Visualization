@@ -1,6 +1,7 @@
 .vscode
 .DS_Store
 .env
+.cache
 
 .tf/terraform*
 .tf/.terraform
@@ -17,5 +18,6 @@ airflow/.env
 airflow/.DS_Store
 airflow/extraction/pipeline_secret.conf
 !*.tf
+
 
 __pycache__/

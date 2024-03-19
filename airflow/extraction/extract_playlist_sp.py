@@ -46,10 +46,19 @@ SP_CLIENT_ID = parser.get("spotipy_config", "client_id")
 
 def main():
     sp = sp_connect()
-    user_playlists = extract_user_playlists(sp)
-    load_to_csv(user_playlists, "playlist")
-    user_tracks = extract_playlist_tracks(sp, user_playlists)
-    load_to_csv(user_tracks, "tracks")
+    print("Extracting Playlist...")
+    user_playlists = playlist_extraction(sp)
+    print("Transforming Playlist...")
+    user_playlists_t = playlist_transformation(user_playlists)
+    print("Exporting Playlist...")
+    load_to_csv(user_playlists_t, "playlist")
+
+    print("Extracting Tracks...")
+    user_tracks = tracks_extraction(sp, user_playlists)
+    print("Transforming Tracks...")
+    user_tracks_t = tracks_transformation(user_tracks)
+    print("Exporting Tracks...")
+    load_to_csv(user_tracks_t, "tracks")
     
 """ Connect to Spotify API through Spotipy """
 def sp_connect():
@@ -61,13 +70,13 @@ def sp_connect():
         sys.exit(1)
 
 
-""" API Extraction """
+""" API Extraction """ #########
 """ 
     Spotify API limits the response of playlists to 50
     so an offset is need to properly paginate through all
     playlists that a user has
 """
-def extract_user_playlists(sp):
+def playlist_extraction(sp):
     offset = 0
     playlists = sp.current_user_playlists(offset = offset)
     total_items = playlists['total']
@@ -82,10 +91,10 @@ def extract_user_playlists(sp):
     return pd.DataFrame(user_playlists)
 
 """ Retreiving every track from each playlist using URI """
-def extract_playlist_tracks(sp, user_playlists):
+def tracks_extraction(sp, user_playlists):
     user_tracks = pd.DataFrame()
     for playlist_uri in user_playlists['uri']:
-        user_tracks = pd.concat([user_tracks, get_tracks_from_playlist(sp, playlist_uri)], axis=0)
+        user_tracks = pd.concat([user_tracks, retrive_playlist_tracks(sp, playlist_uri)], axis=0)
     
     return user_tracks
 
@@ -94,7 +103,7 @@ def extract_playlist_tracks(sp, user_playlists):
     so an offset is need to properly paginate through all
     playlists that a user has
 """
-def get_tracks_from_playlist(sp, playlist_uri):
+def retrive_playlist_tracks(sp, playlist_uri):
 
     offset = 0
     playlist_tracks = sp.playlist_tracks(playlist_uri, offset = offset)
@@ -103,16 +112,41 @@ def get_tracks_from_playlist(sp, playlist_uri):
 
     for i in range(math.ceil(total_items / 50)):
         for track in playlist_tracks['items']:
-            tracks.append(track)
+            if track['track'] != None:
+                tracks.append(track['track'])
         offset += 50
         playlist_tracks = sp.playlist_tracks(playlist_uri, offset = offset)
     
     return pd.DataFrame(tracks)
 
+""" Transformations of dataframes """ ########
 
-""" CSV Formatting"""
+def playlist_transformation(playlist_df):
+    playlist_df.dropna()
+    playlist_df = playlist_df.drop(['collaborative', 'description','external_urls', 'href', 'public', 'primary_color', 'images', 'snapshot_id', 'type'], axis=1)
+
+    playlist_df['owner'] = playlist_df['owner'].apply(lambda x : x.get('display_name'))
+    playlist_df['total'] = playlist_df['tracks'].apply(lambda x : x.get('total'))
+    playlist_df = playlist_df.drop(['tracks'], axis=1)
+
+    playlist_df.set_index('uri', inplace=True)
+
+    return playlist_df
+    
+
+def tracks_transformation(track_df):
+    track_df.dropna()
+    track_df = track_df.drop(['preview_url' ,'available_markets', 'explicit', 'type', 'episode', 'track', 'album', 'artists', 
+                              'disc_number', 'track_number' , 'duration_ms' , 'external_ids','external_urls','href', 'is_local'], axis = 1)
+    
+    track_df.set_index('uri', inplace=True)
+    
+    return track_df
+
+
+""" CSV Formatting""" ########
 def load_to_csv(df, type):
-    df.to_csv(f"{script_path}/tmp/{type}.csv", index=False)
+    df.to_csv(f"{script_path}/tmp/{type}.csv", mode='w')
 
 
 
