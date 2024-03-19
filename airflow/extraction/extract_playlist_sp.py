@@ -15,8 +15,9 @@ import math
 from playlist import Playlist
 
 """
-    TODO: Basic Transformations of the dataframes
     TODO: Set up Airflow DAG and unblock command line arguments
+    TODO: Implement audio feature extractions
+    TODO: Write playlist and tracks classes
 """
 
 """ Load enviorment variables and set scope for Spotipy authorization flow"""
@@ -37,12 +38,12 @@ SP_CLIENT_ID = parser.get("spotipy_config", "client_id")
     Use command line argument as output file
     name and also store as column value
 """
-# try:
-#     output_name = sys.argv[1]
-# except Exception as e:
-#     print(f"Error with file input. Error {e}")
-#     sys.exit(1)
-# date_dag_run = datetime.datetime.strptime(output_name, "%Y%m%d")
+try:
+    output_name = sys.argv[1]
+except Exception as e:
+    print(f"Error with file input. Error {e}")
+    sys.exit(1)
+date_dag_run = datetime.datetime.strptime(output_name, "%Y%m%d")
 
 def main():
     sp = sp_connect()
@@ -146,7 +147,7 @@ def tracks_transformation(track_df):
 
 """ CSV Formatting""" ########
 def load_to_csv(df, type):
-    df.to_csv(f"{script_path}/tmp/{type}.csv", mode='w')
+    df.to_csv(f"{script_path}/tmp/{type}_{date_dag_run}.csv", mode='w')
 
 
 
