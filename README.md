@@ -13,7 +13,8 @@ Orchestration via Airflow! Containers and images with Docker cause why not!
 
 ## Future Problems
 1) Redshift is too expensive to have constantly running, so BigQuery, SnowflakeDB, or Databricks are alternatives that I should look into. But for now as I focus on the extraction process I'll keep Redshift in the infrastructure plans.
-   a) BigQuery seems like a good warehousing alternative, at least to help the visiualizations with Looker.
+
+   a) BigQuery seems like a good warehousing alternative, at least staying within the suite will help when it comes time to create the visiualizations with Looker.
 3) Being the aspiring data engineer that I am, I still want to remain true to software desigin pattern practices. So, I'll want to refactor the extraction process to follow a factory or strategy pattern. OOP in python? That surely wouldn't be a pain right? Surely it has to be better than a HTTP connections in Java.
 4) It would be cool to compare the features of the playlists to the song that I am currently listening to, great excuse to stumble down Kafka streams.
 
