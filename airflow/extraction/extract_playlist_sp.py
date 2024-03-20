@@ -20,8 +20,7 @@ from playlist import Playlist
     TODO: Write playlist and tracks classes
 """
 
-""" Load enviorment variables and set scope for Spotipy authorization flow"""
-load_dotenv()
+""" Load Spotipy credentials and set scope for Spotipy authorization flow"""
 scope = "playlist-read-private"
 
 """ Read Config File """
@@ -33,6 +32,7 @@ parser.read(f"{script_path}/{config_file}")
 """ Set Variables from Config """
 SP_SECRET = parser.get("spotipy_config", "client_secret")
 SP_CLIENT_ID = parser.get("spotipy_config", "client_id")
+SP_REDIRECT_URL = parser.get("spotipy_config", "redirect_uri")
 
 """ 
     Use command line argument as output file
@@ -64,7 +64,7 @@ def main():
 """ Connect to Spotify API through Spotipy """
 def sp_connect():
     try: 
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=SP_CLIENT_ID, client_secret=SP_SECRET, redirect_uri=SP_REDIRECT_URL))
         return sp
     except Exception as e:
         print(f"Unable to connect to API: {e}")
@@ -147,7 +147,7 @@ def tracks_transformation(track_df):
 
 """ CSV Formatting""" ########
 def load_to_csv(df, type):
-    df.to_csv(f"{script_path}/tmp/{type}_{date_dag_run}.csv", mode='w')
+    df.to_csv(f"{script_path}/tmp/{type}_{output_name}.csv", mode='w')
 
 
 

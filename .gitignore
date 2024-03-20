@@ -1,15 +1,15 @@
 .vscode
 .DS_Store
 .env
-.cache
 
 .tf/terraform*
 .tf/.terraform
 .tf/terraform.tfvars
 
 *.conf
+*.cache
 
-airflow/extraction/*.csv
+airflow/extraction/tmp/*.csv
 airflow/dags/__pycache__
 airflow/plugins/*
 airflow/logs/*

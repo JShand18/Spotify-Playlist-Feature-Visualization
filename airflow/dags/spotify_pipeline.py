@@ -24,10 +24,15 @@ with DAG(
 ) as dag:
     extract_sp_data = BashOperator(
         task_id = "extract_spotify_data",
-        bash_command = "fpython /opt/airflow/extraction/extract_playlist_sp.py {output_name}",
+        bash_command = f"python3 /opt/airflow/extraction/extract_playlist_sp.py {output_name}",
+        dag = dag
+    )
+    load_to_s3 = BashOperator(
+        task_id = "upload_to_s3_bucket",
+        bash_command = f"python3 /opt/airflow/extraction/load_sp_to_s3.py {output_name}",
         dag = dag
     )
 
     extract_sp_data.doc_md = "Extract Spotify playlist and track data, then store as CSV"
 
-extract_sp_data
+extract_sp_data >> load_to_s3
