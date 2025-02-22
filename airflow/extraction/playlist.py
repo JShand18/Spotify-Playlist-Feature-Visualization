@@ -2,6 +2,8 @@ from datetime import datetime
 from pathlib import Path  
 import pandas as pd
 
+from tracks import Track
+
 
 
 class Playlist():
@@ -29,23 +31,16 @@ class Playlist():
         return playlist_df
 
     def get_playlist_data_df(self, tracks):
-        data = {
-            'id':[],
-            'title':[],
-            'artist':[],
-            'popularity':[],
-        }
+        data = {}
 
         for item in tracks['items']:
             track = item['track']
-            if track['id'] not in  data['id']:
-                data['id'].append(track['id'])
-                data['title'].append(track['name'])
-                data['artist'].append(track['artists'][0]['name'])
-                data['popularity'].append(track['popularity'])
+            uri = track['id']
+            track_obj = Track(uri)
+            data['uri'] = track_obj
+        
 
-        tracks_playlist_df = pd.DataFrame(data)
-        return tracks_playlist_df
+        return data
     
     def get_track_feature_df(self, tracks_playlist_df):
         # TODO: test to see if neccasary for error handling

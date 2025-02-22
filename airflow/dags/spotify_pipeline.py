@@ -1,8 +1,10 @@
 from os import remove
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
+from airflow.utils.log.logging_mixin import LoggingMixin
 from datetime import timedelta, datetime
+
 
 
 ## Output current day for file exportation
@@ -25,14 +27,15 @@ with DAG(
     extract_sp_data = BashOperator(
         task_id = "extract_spotify_data",
         bash_command = f"python3 /opt/airflow/extraction/extract_playlist_sp.py {output_name}",
-        dag = dag
+        dag = dag,
     )
+    extract_sp_data.doc_md = "Extract Spotify playlist and track data, then store as CSV"
     load_to_s3 = BashOperator(
         task_id = "upload_to_s3_bucket",
         bash_command = f"python3 /opt/airflow/extraction/load_sp_to_s3.py {output_name}",
-        dag = dag
+        dag = dag,
     )
 
-    extract_sp_data.doc_md = "Extract Spotify playlist and track data, then store as CSV"
+    
 
 extract_sp_data >> load_to_s3

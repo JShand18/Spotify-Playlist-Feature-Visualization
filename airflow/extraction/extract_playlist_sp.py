@@ -6,11 +6,14 @@ import datetime
 from dotenv import load_dotenv
 import pathlib
 import sys
+import logging
 import time
 
 import pandas as pd
 import numpy as np
 import math
+
+
 
 from playlist import Playlist
 
@@ -29,6 +32,9 @@ script_path = pathlib.Path(__file__).parent.resolve()
 config_file = "config.conf"
 parser.read(f"{script_path}/{config_file}")
 
+""" Logging object to ouput to Airflow"""
+logger = logging.getLogger("airflow.task")
+
 """ Set Variables from Config """
 SP_SECRET = parser.get("spotipy_config", "client_secret")
 SP_CLIENT_ID = parser.get("spotipy_config", "client_id")
@@ -41,25 +47,54 @@ SP_REDIRECT_URL = parser.get("spotipy_config", "redirect_uri")
 try:
     output_name = sys.argv[1]
 except Exception as e:
-    print(f"Error with file input. Error {e}")
+    logger.warn(f"Error with file input. Error {e}")
     sys.exit(1)
+
 date_dag_run = datetime.datetime.strptime(output_name, "%Y%m%d")
 
 def main():
-    sp = sp_connect()
-    print("Extracting Playlist...")
-    user_playlists = playlist_extraction(sp)
-    print("Transforming Playlist...")
-    user_playlists_t = playlist_transformation(user_playlists)
-    print("Exporting Playlist...")
-    load_to_csv(user_playlists_t, "playlist")
 
-    print("Extracting Tracks...")
+    start = time.perf_counter()
+
+    sp = sp_connect()
+    SP_CONNECT_TIME = time.perf_counter() - start
+    print(f"sp_connect completed in: {SP_CONNECT_TIME:0.4f}s")
+
+    start = time.perf_counter()
+    logger.info("Extracting Playlist...")
+    user_playlists = playlist_extraction(sp)
+    E_PLAYLIST_TIME = time.perf_counter() - start
+    print(f"playlists extraction completed in: {E_PLAYLIST_TIME:0.4f}s")
+
+    start = time.perf_counter()
+    logger.info("Transforming Playlist...")
+    user_playlists_t = playlist_transformation(user_playlists)
+    T_PLAYLIST_TIME = time.perf_counter() - start
+    print(f"playlists transformation completed in: {T_PLAYLIST_TIME:0.4f}s")
+
+    start = time.perf_counter()
+    logger.info("Exporting Playlist...")
+    load_to_csv(user_playlists_t, "playlist")
+    L_PLAYLIST_TIME = time.perf_counter() - start
+    print(f"playlists loading completed in: {L_PLAYLIST_TIME:0.4f}s")
+
+    start = time.perf_counter()
+    logger.info("Extracting Tracks...")
     user_tracks = tracks_extraction(sp, user_playlists)
-    print("Transforming Tracks...")
+    E_TRACK_TIME = time.perf_counter() - start
+    print(f"track extraction completed in: {E_TRACK_TIME:0.4f}s")
+
+    start = time.perf_counter() 
+    logger.info("Transforming Tracks...")
     user_tracks_t = tracks_transformation(user_tracks)
-    print("Exporting Tracks...")
+    T_TRACK_TIME = time.perf_counter() - start
+    print(f"track transformation completed in: {T_TRACK_TIME:0.4f}s")
+
+    start = time.perf_counter()
+    logger.info("Exporting Tracks...")
     load_to_csv(user_tracks_t, "tracks")
+    L_TRACK_TIME = time.perf_counter() - start
+    print(f"track loading completed in: {L_TRACK_TIME:0.4f}s")
     
 """ Connect to Spotify API through Spotipy """
 def sp_connect():
@@ -67,7 +102,7 @@ def sp_connect():
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=SP_CLIENT_ID, client_secret=SP_SECRET, redirect_uri=SP_REDIRECT_URL))
         return sp
     except Exception as e:
-        print(f"Unable to connect to API: {e}")
+        logger.warn(f"Unable to connect to API: {e}")
         sys.exit(1)
 
 
@@ -95,7 +130,10 @@ def playlist_extraction(sp):
 def tracks_extraction(sp, user_playlists):
     user_tracks = pd.DataFrame()
     for playlist_uri in user_playlists['uri']:
+        start = time.perf_counter()
+        print(f"{playlist_uri} started")
         user_tracks = pd.concat([user_tracks, retrive_playlist_tracks(sp, playlist_uri)], axis=0)
+        print(f"{playlist_uri} total time: {time.perf_counter() - start:0.4f} seconds")
     
     return user_tracks
 
@@ -105,6 +143,8 @@ def tracks_extraction(sp, user_playlists):
     playlists that a user has
 """
 def retrive_playlist_tracks(sp, playlist_uri):
+
+    start = time.perf_counter()
 
     offset = 0
     playlist_tracks = sp.playlist_tracks(playlist_uri, offset = offset)
@@ -117,6 +157,7 @@ def retrive_playlist_tracks(sp, playlist_uri):
                 tracks.append(track['track'])
         offset += 50
         playlist_tracks = sp.playlist_tracks(playlist_uri, offset = offset)
+        print(f"-----Elapsed Time for {i}th: {time.perf_counter() - start:0.4f} seconds")
     
     return pd.DataFrame(tracks)
 
